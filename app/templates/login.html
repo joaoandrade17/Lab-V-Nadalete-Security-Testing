@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Entrar</h2>
+  {% if erro %}<p class="erro">{{ erro }}</p>{% endif %}
+  <form method="post" class="card">
+    <label>Usuario
+      <input type="text" name="username" autofocus>
+    </label>
+    <label>Senha
+      <input type="password" name="password">
+    </label>
+    <button type="submit">Entrar</button>
+  </form>
+  <p class="dica">Dica para a turma: <code>maria / maria2024</code></p>
+{% endblock %}

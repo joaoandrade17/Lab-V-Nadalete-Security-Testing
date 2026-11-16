@@ -1,0 +1,5 @@
+.venv/
+__pycache__/
+*.pyc
+app/mural.db
+.DS_Store

@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Testing — Mural da Turma</title>
+<style>
+  :root{
+    --bg:#0f172a; --bg2:#020617; --card:#1e293b; --line:#334155;
+    --text:#e2e8f0; --muted:#94a3b8; --accent:#38bdf8; --accent2:#a78bfa;
+    --ok:#34d399; --bad:#f87171; --warn:#fbbf24;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg2);color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .deck{height:100vh;display:flex;align-items:center;justify-content:center}
+  .slide{display:none;width:min(1000px,94vw);height:min(640px,92vh);
+    background:linear-gradient(160deg,var(--bg),var(--bg2));
+    border:1px solid var(--line);border-radius:16px;padding:40px 48px;
+    overflow:auto;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .slide.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+  .kicker{color:var(--accent);font-size:.8rem;font-weight:700;
+    letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+  h1{font-size:2.6rem;line-height:1.1;margin:.2em 0}
+  h2{font-size:1.9rem;margin:.1em 0 .6em}
+  h3{font-size:1.15rem;color:var(--accent2);margin:1.1em 0 .3em}
+  ul{margin:.3em 0;padding-left:1.2em;line-height:1.7}
+  li{margin:.18em 0}
+  li small,.muted{color:var(--muted)}
+  p{line-height:1.6}
+  .sub{color:var(--muted);font-size:1.1rem}
+  table{border-collapse:collapse;width:100%;font-size:.92rem;margin:.4em 0}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:#0b1220;color:var(--accent);font-weight:600}
+  code,pre{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+  code{background:#0b1220;border:1px solid var(--line);padding:1px 6px;border-radius:5px;color:#e2e8f0}
+  pre{background:#0b1220;border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;overflow:auto;font-size:.86rem;line-height:1.5;margin:.5em 0}
+  .bad{color:var(--bad)} .ok{color:var(--ok)} .warn{color:var(--warn)}
+  .accent{color:var(--accent)}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .box.red{border-color:#7f1d1d;background:#1b1113}
+  .box.green{border-color:#14532d;background:#0c1a12}
+  .tag{display:inline-block;background:#0b1220;border:1px solid var(--line);
+    border-radius:999px;padding:3px 12px;font-size:.78rem;color:var(--muted);margin:2px}
+  .center{display:flex;flex-direction:column;justify-content:center;height:100%}
+  .big{font-size:1.25rem}
+  footer{position:fixed;bottom:14px;left:0;right:0;display:flex;
+    justify-content:space-between;padding:0 28px;color:#475569;font-size:.78rem}
+  .progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);transition:width .2s}
+  .hint{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);
+    color:#475569;font-size:.75rem}
+  svg text{fill:var(--text);font-family:system-ui,sans-serif}
+  .pill{fill:var(--card);stroke:var(--line)}
+  .flow{stroke:var(--accent);stroke-width:2;fill:none;marker-end:url(#arrow)}
+  .attack{stroke:var(--bad);stroke-width:2;fill:none;stroke-dasharray:6 5;marker-end:url(#arrowbad)}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+<!-- 1 CAPA -->
+<section class="slide active">
+  <div class="center">
+    <div class="kicker">Non-Functional Testing</div>
+    <h1>Security Testing</h1>
+    <p class="sub">Testando o que o sistema <em>não</em> deve permitir —<br>
+    demonstrado em uma aplicação web com duas vulnerabilidades reais.</p>
+    <p class="muted" style="margin-top:30px">Grupo Concord · Fatec São José dos Campos<br>
+    Exemplo prático: <strong>Mural da Turma</strong> (Python + Flask)</p>
+  </div>
+</section>
+
+<!-- 2 AGENDA -->
+<section class="slide">
+  <div class="kicker">Agenda</div>
+  <h2>O que vamos ver</h2>
+  <div class="cols">
+    <ul>
+      <li>Introdução e histórico</li>
+      <li>O que é e qual o propósito</li>
+      <li>Principais técnicas e riscos (OWASP)</li>
+      <li>Prós, contras e ferramentas</li>
+    </ul>
+    <ul>
+      <li>Ilustração: como os ataques funcionam</li>
+      <li><span class="accent">Demo ao vivo:</span> SQL Injection</li>
+      <li><span class="accent">Demo ao vivo:</span> Stored XSS</li>
+      <li>Conclusão e referências</li>
+    </ul>
+  </div>
+  <div class="box" style="margin-top:18px">
+    <strong>Entregáveis:</strong> repositório Git com o exemplo prático
+    (branches <code>vulneravel</code> e <code>corrigido</code>) e esta apresentação.
+  </div>
+</section>
+
+<!-- 3 INTRODUÇÃO -->
+<section class="slide">
+  <div class="kicker">Introdução</div>
+  <h2>Onde entra o teste de segurança</h2>
+  <ul>
+    <li><strong>Teste funcional:</strong> o sistema faz o que foi pedido?</li>
+    <li><strong>Teste não funcional:</strong> <em>como</em> ele se comporta — desempenho,
+      confiabilidade, usabilidade e <span class="accent">segurança</span>.</li>
+    <li><strong>Security Testing:</strong> verifica se o sistema continua protegendo dados
+      e funções quando alguém tenta, de propósito, fazê-lo falhar.</li>
+    <li>O "usuário" do teste é um <span class="bad">adversário inteligente</span>, não um usuário comum.</li>
+    <li>Testa principalmente <strong>requisitos negativos</strong>: o que o sistema
+      <em>não</em> deve permitir <span class="muted">(POTTER; McGRAW, 2004)</span>.</li>
+  </ul>
+  <div class="box" style="margin-top:14px">
+    Exemplo: <em>"ninguém deve entrar sem a senha certa"</em> e
+    <em>"um recado não pode executar código no navegador de quem lê"</em>.
+  </div>
+</section>
+
+<!-- 4 POR QUE -->
+<section class="slide">
+  <div class="kicker">Introdução</div>
+  <h2>Por que testar segurança?</h2>
+  <ul>
+    <li><strong>Software funcionalmente correto pode ser inseguro.</strong>
+      No nosso exemplo, a tela de login e o mural <em>funcionam</em> — e mesmo assim são exploráveis.</li>
+    <li>Falhas de segurança quase nunca aparecem no uso normal: aparecem com
+      <span class="bad">entradas maliciosas</span>.</li>
+    <li>Quanto mais tarde a falha é descoberta, mais cara é a correção
+      <span class="muted">(McGRAW, 2006)</span>.</li>
+    <li>Consequências de uma falha explorada: vazamento de dados, fraude,
+      indisponibilidade, prejuízo financeiro e de imagem.</li>
+    <li>Segurança não se adiciona no final: precisa ser <strong>verificada durante todo o desenvolvimento</strong>.</li>
+  </ul>
+</section>
+
+<!-- 5 HISTÓRICO -->
+<section class="slide">
+  <div class="kicker">Introdução</div>
+  <h2>Histórico</h2>
+  <table>
+    <tr><th style="width:120px">Ano</th><th>Marco</th></tr>
+    <tr><td>1975</td><td>Saltzer e Schroeder publicam os princípios de projeto de proteção (menor privilégio, falha segura, mediação completa).</td></tr>
+    <tr><td>1988</td><td>Worm de Morris explora falhas em serviços UNIX e paralisa parte da Internet <span class="muted">(SPAFFORD, 1989)</span>.</td></tr>
+    <tr><td>1990</td><td>Miller et al. criam o <em>fuzz testing</em>: entradas aleatórias derrubam 25%–33% dos utilitários UNIX testados.</td></tr>
+    <tr><td>2001</td><td>Fundação da OWASP; em 2003 sai a primeira edição do OWASP Top 10.</td></tr>
+    <tr><td>2004–06</td><td>Potter e McGraw defendem o teste baseado em risco e o "building security in". Microsoft adota o SDL.</td></tr>
+    <tr><td>Anos 2010</td><td>DevSecOps: SAST, DAST e SCA automatizados no pipeline de CI/CD.</td></tr>
+    <tr><td>2021</td><td>OWASP Top 10:2021 coloca <em>Broken Access Control</em> como risco nº 1.</td></tr>
+  </table>
+</section>
+
+<!-- 6 O QUE É -->
+<section class="slide">
+  <div class="kicker">O que é e qual o propósito</div>
+  <h2>O que é Security Testing?</h2>
+  <ul>
+    <li><strong>Myers, Sandler &amp; Badgett (2011):</strong> elaborar casos de teste que tentam
+      subverter as verificações de segurança do programa.</li>
+    <li><strong>Pressman &amp; Maxim (2016):</strong> verificar se os mecanismos de proteção de fato
+      protegem contra acesso indevido.</li>
+    <li><strong>Felderer et al. (2016):</strong> validar os requisitos de segurança e identificar vulnerabilidades.</li>
+  </ul>
+  <h3>Duas frentes complementares (POTTER; McGRAW, 2004)</h3>
+  <div class="cols">
+    <div class="box">🔐 <strong>Testar os mecanismos</strong><br><small class="muted">login, permissões, criptografia — parece teste funcional</small></div>
+    <div class="box">🕵️ <strong>Teste baseado em risco</strong><br><small class="muted">pensar como o atacante e procurar o que ninguém especificou</small></div>
+  </div>
+  <p class="muted" style="margin-top:12px">Pode ser aplicado em todos os níveis: unidade, integração e sistema.</p>
+</section>
+
+<!-- 7 PROPRIEDADES -->
+<section class="slide">
+  <div class="kicker">O que é e qual o propósito</div>
+  <h2>Propriedades que o teste verifica</h2>
+  <table>
+    <tr><th>Propriedade</th><th>Pergunta que o teste responde</th><th>No nosso exemplo</th></tr>
+    <tr><td>Confidencialidade</td><td>Só quem tem permissão lê o dado?</td><td>Senha do admin não deve vazar</td></tr>
+    <tr><td>Integridade</td><td>Só quem tem permissão altera o dado?</td><td>SQL Injection não pode burlar o login</td></tr>
+    <tr><td>Autenticação</td><td>O sistema confirma quem é o usuário?</td><td>Só entra quem sabe a senha</td></tr>
+    <tr><td>Autorização</td><td>O usuário só faz o que pode?</td><td>Só quem está logado publica</td></tr>
+    <tr><td>Disponibilidade / Não repúdio</td><td>Resiste a ataque? Prova quem agiu?</td><td class="muted">Fora do escopo deste exemplo</td></tr>
+  </table>
+</section>
+
+<!-- 8 PROPÓSITO -->
+<section class="slide">
+  <div class="kicker">O que é e qual o propósito</div>
+  <h2>Qual o propósito?</h2>
+  <ul>
+    <li>Encontrar vulnerabilidades <strong>antes</strong> que um atacante encontre.</li>
+    <li>Verificar se os controles funcionam: autenticação, autorização, validação de entrada.</li>
+    <li>Medir e <strong>reduzir o risco</strong>: priorizar o que causa maior impacto.</li>
+    <li>Evitar regressão: um teste de segurança automatizado roda a cada alteração do código.</li>
+    <li>Produzir <strong>evidência objetiva</strong> de que os requisitos foram verificados.</li>
+  </ul>
+  <div class="box red" style="margin-top:14px">
+    <strong>Limite importante:</strong> o teste mostra a <em>presença</em> de vulnerabilidades,
+    nunca a <em>ausência</em> delas <span class="muted">(MYERS; SANDLER; BADGETT, 2011)</span>.
+  </div>
+</section>
+
+<!-- 9 TÉCNICAS -->
+<section class="slide">
+  <div class="kicker">Técnicas e riscos</div>
+  <h2>Principais técnicas</h2>
+  <table>
+    <tr><th>Técnica</th><th>Como funciona</th><th>Executa?</th><th>No exemplo</th></tr>
+    <tr><td>SAST (estática)</td><td>Analisa o código-fonte procurando padrões inseguros</td><td>Não</td><td>Bandit (Python)</td></tr>
+    <tr><td>DAST (dinâmica)</td><td>Ataca a aplicação em execução pela interface (caixa-preta)</td><td>Sim</td><td>OWASP ZAP</td></tr>
+    <tr><td>Exploração manual</td><td>O testador reproduz o ataque pela própria interface</td><td>Sim</td><td class="accent">navegador + payloads</td></tr>
+    <tr><td>Fuzzing</td><td>Envia grande volume de entradas inválidas/aleatórias</td><td>Sim</td><td class="muted">—</td></tr>
+    <tr><td>SCA (dependências)</td><td>Procura bibliotecas com falhas conhecidas</td><td>Não</td><td class="muted">pip-audit</td></tr>
+    <tr><td>Teste de penetração</td><td>Especialista simula um ataque real, manual</td><td>Sim</td><td class="muted">—</td></tr>
+  </table>
+  <p class="muted" style="margin-top:8px">Na demonstração o foco é a <span class="accent">exploração manual</span>, apoiada por SAST (Bandit).</p>
+</section>
+
+<!-- 10 OWASP -->
+<section class="slide">
+  <div class="kicker">Técnicas e riscos</div>
+  <h2>OWASP Top 10:2021 — os riscos que guiam os testes</h2>
+  <table>
+    <tr><th>#</th><th>Risco</th><th>#</th><th>Risco</th></tr>
+    <tr><td>A01</td><td>Broken Access Control</td><td>A06</td><td>Vulnerable &amp; Outdated Components</td></tr>
+    <tr><td>A02</td><td>Cryptographic Failures</td><td>A07</td><td>Identification &amp; Authentication Failures <span class="accent">(*)</span></td></tr>
+    <tr><td><span class="accent">A03</span></td><td><span class="accent">Injection (*) — inclui SQLi e XSS</span></td><td>A08</td><td>Software &amp; Data Integrity Failures</td></tr>
+    <tr><td>A04</td><td>Insecure Design</td><td>A09</td><td>Logging &amp; Monitoring Failures</td></tr>
+    <tr><td>A05</td><td>Security Misconfiguration</td><td>A10</td><td>Server-Side Request Forgery</td></tr>
+  </table>
+  <div class="box" style="margin-top:12px">
+    <span class="accent">(*)</span> Nossas duas falhas caem em <strong>A03 Injection</strong>:
+    SQL Injection e Stored XSS. <small class="muted">(No Top 10 de 2017 o XSS era o A07; em 2021 foi
+    agrupado em Injection.)</small> Cada risco vira casos de teste: o que o atacante tentaria e o que o sistema deve responder.
+  </div>
+</section>
+
+<!-- 11 CICLO -->
+<section class="slide">
+  <div class="kicker">Técnicas e riscos</div>
+  <h2>Onde o teste entra no ciclo</h2>
+  <table>
+    <tr><th>Fase</th><th>Atividade de segurança</th></tr>
+    <tr><td>Requisitos</td><td>Requisitos de segurança e casos de abuso (o que o atacante tentaria)</td></tr>
+    <tr><td>Projeto</td><td>Análise de risco da arquitetura</td></tr>
+    <tr><td>Codificação</td><td><span class="accent">Análise estática (SAST) e revisão de código</span></td></tr>
+    <tr><td>Teste</td><td><span class="accent">Testes automatizados, análise dinâmica (DAST) e fuzzing</span></td></tr>
+    <tr><td>Implantação e operação</td><td>Teste de penetração, análise de dependências e monitoramento</td></tr>
+  </table>
+  <p class="muted" style="margin-top:10px">Baseado nos <em>touchpoints</em> de McGraw (2006).
+  Quanto mais cedo a técnica é aplicada, mais barata é a correção. Nosso exemplo cobre
+  <strong>codificação</strong> e <strong>teste</strong>.</p>
+</section>
+
+<!-- 12 PRÓS/CONTRAS -->
+<section class="slide">
+  <div class="kicker">Prós, contras e ferramentas</div>
+  <h2>Vantagens e desvantagens</h2>
+  <div class="cols">
+    <div class="box green">
+      <h3 style="color:var(--ok);margin-top:0">Vantagens</h3>
+      <ul>
+        <li>Encontra falhas que o teste funcional não vê</li>
+        <li>Corrigir cedo custa menos que corrigir após incidente</li>
+        <li>Pode ser automatizado e repetido a cada alteração</li>
+        <li>Existem ferramentas maduras e gratuitas</li>
+        <li>Gera evidência objetiva dos requisitos</li>
+      </ul>
+    </div>
+    <div class="box red">
+      <h3 style="color:var(--bad);margin-top:0">Desvantagens</h3>
+      <ul>
+        <li>Não prova que o sistema está seguro</li>
+        <li>Falsos positivos (SAST) e falsos negativos (DAST)</li>
+        <li>Exige conhecimento especializado</li>
+        <li><strong>Ferramentas não entendem regra de negócio</strong></li>
+        <li>Precisa de manutenção: surgem falhas novas o tempo todo</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 13 PRÓS POR TÉCNICA -->
+<section class="slide">
+  <div class="kicker">Prós, contras e ferramentas</div>
+  <h2>Prós e contras por técnica</h2>
+  <table>
+    <tr><th>Técnica</th><th>Pontos fortes</th><th>Pontos fracos</th></tr>
+    <tr><td>SAST</td><td>Rápido, não executa o sistema, aponta a linha do defeito</td><td>Falsos positivos; não enxerga comportamento em execução</td></tr>
+    <tr><td>DAST</td><td>Testa o sistema real, como o atacante; independe da linguagem</td><td>Lento; não aponta a linha; não acha falhas de autorização</td></tr>
+    <tr><td>Exploração manual / testes</td><td>Cobrem regra de negócio e autorização; viram regressão</td><td>Só testam o que a equipe pensou; dão trabalho</td></tr>
+    <tr><td>Teste de penetração</td><td>Criatividade humana; acha falhas encadeadas</td><td>Caro, manual, difícil de repetir</td></tr>
+  </table>
+  <div class="box" style="margin-top:12px"><strong>Conclusão:</strong> as técnicas se complementam — nenhuma substitui a outra.</div>
+</section>
+
+<!-- 14 FERRAMENTAS -->
+<section class="slide">
+  <div class="kicker">Prós, contras e ferramentas</div>
+  <h2>Ferramentas e frameworks</h2>
+  <table>
+    <tr><th>Categoria</th><th>Ferramentas</th><th>Site</th></tr>
+    <tr><td>SAST</td><td>Bandit <span class="accent">(*)</span>, Semgrep, SonarQube</td><td>bandit.readthedocs.io · semgrep.dev</td></tr>
+    <tr><td>DAST</td><td>OWASP ZAP, Burp Suite</td><td>zaproxy.org · portswigger.net/burp</td></tr>
+    <tr><td>Injeção de SQL</td><td>sqlmap</td><td>sqlmap.org</td></tr>
+    <tr><td>Testes automatizados</td><td>pytest</td><td>pytest.org</td></tr>
+    <tr><td>Dependências (SCA)</td><td>pip-audit, OWASP Dependency-Check</td><td>owasp.org/.../dependency-check</td></tr>
+    <tr><td>Guias de teste</td><td>OWASP Top 10, OWASP WSTG</td><td>owasp.org/Top10 · owasp.org/.../wstg</td></tr>
+  </table>
+  <p class="muted" style="margin-top:8px"><span class="accent">(*)</span> Usada no exemplo prático (opcional na demo).</p>
+</section>
+
+<!-- 15 O EXEMPLO -->
+<section class="slide">
+  <div class="kicker">Exemplo prático</div>
+  <h2>O exemplo: Mural da Turma</h2>
+  <ul>
+    <li>Pequena aplicação web em <strong>Python + Flask</strong> com banco <strong>SQLite</strong>.</li>
+    <li>Escrita com <span class="bad">duas vulnerabilidades de propósito</span>.</li>
+  </ul>
+  <table>
+    <tr><th>Rota</th><th>O que faz</th></tr>
+    <tr><td><code>/login</code></td><td>Recebe usuário e senha e autentica</td></tr>
+    <tr><td><code>/mural</code></td><td>Lista recados e permite publicar (se logado)</td></tr>
+  </table>
+  <div class="cols" style="margin-top:12px">
+    <div class="box">👤 <strong>maria</strong> / maria2024<br><small class="muted">usuária comum, conhecida pela turma</small></div>
+    <div class="box">🔑 <strong>admin</strong> / supersecreta123<br><small class="muted">senha que o atacante NÃO conhece</small></div>
+  </div>
+</section>
+
+<!-- 16 ILUSTRAÇÃO SQLi -->
+<section class="slide">
+  <div class="kicker">Ilustração</div>
+  <h2>Como funciona o SQL Injection</h2>
+  <svg viewBox="0 0 920 360" width="100%" height="330">
+    <defs>
+      <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#38bdf8"/></marker>
+      <marker id="arrowbad" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#f87171"/></marker>
+    </defs>
+    <!-- atacante -->
+    <rect class="pill" x="20" y="130" width="150" height="70" rx="10"/>
+    <text x="95" y="160" text-anchor="middle" font-size="14" font-weight="700">Atacante</text>
+    <text x="95" y="182" text-anchor="middle" font-size="12" fill="#94a3b8">digita no login</text>
+    <!-- input -->
+    <rect x="210" y="40" width="470" height="54" rx="8" fill="#1b1113" stroke="#7f1d1d"/>
+    <text x="225" y="63" font-size="13" fill="#f87171" font-family="monospace">usuário:  admin'  --</text>
+    <text x="225" y="83" font-size="13" fill="#f87171" font-family="monospace">senha:    qualquercoisa</text>
+    <line x1="170" y1="150" x2="230" y2="94" class="attack"/>
+    <!-- servidor monta SQL -->
+    <rect class="pill" x="210" y="130" width="470" height="110" rx="10"/>
+    <text x="225" y="155" font-size="13" font-weight="700">Servidor monta a consulta concatenando o texto:</text>
+    <text x="225" y="182" font-size="12.5" font-family="monospace" fill="#e2e8f0">SELECT * FROM users WHERE user='<tspan fill="#f87171">admin' --</tspan>'</text>
+    <text x="225" y="206" font-size="12.5" font-family="monospace" fill="#94a3b8">AND password='...'  <tspan fill="#f87171">← vira comentário, ignorado</tspan></text>
+    <line x1="680" y1="185" x2="740" y2="185" class="attack"/>
+    <!-- banco -->
+    <rect class="pill" x="740" y="130" width="150" height="70" rx="10"/>
+    <text x="815" y="160" text-anchor="middle" font-size="14" font-weight="700">Banco</text>
+    <text x="815" y="182" text-anchor="middle" font-size="12" fill="#34d399">retorna o admin ✓</text>
+    <!-- resultado -->
+    <rect x="210" y="280" width="680" height="50" rx="10" fill="#0c1a12" stroke="#14532d"/>
+    <text x="230" y="310" font-size="14" fill="#34d399">Entrou como admin sem saber a senha. A entrada foi interpretada como COMANDO, não como dado.</text>
+  </svg>
+</section>
+
+<!-- 17 ILUSTRAÇÃO XSS -->
+<section class="slide">
+  <div class="kicker">Ilustração</div>
+  <h2>Como funciona o Stored XSS</h2>
+  <svg viewBox="0 0 920 360" width="100%" height="330">
+    <!-- atacante -->
+    <rect class="pill" x="20" y="40" width="170" height="80" rx="10"/>
+    <text x="105" y="70" text-anchor="middle" font-size="14" font-weight="700">1. Atacante</text>
+    <text x="105" y="92" text-anchor="middle" font-size="11.5" fill="#94a3b8">publica um recado</text>
+    <text x="105" y="108" text-anchor="middle" font-size="11" font-family="monospace" fill="#f87171">&lt;script&gt;…&lt;/script&gt;</text>
+    <!-- banco -->
+    <line x1="190" y1="80" x2="360" y2="80" class="attack"/>
+    <rect class="pill" x="360" y="40" width="190" height="80" rx="10"/>
+    <text x="455" y="70" text-anchor="middle" font-size="14" font-weight="700">2. Banco de dados</text>
+    <text x="455" y="92" text-anchor="middle" font-size="11.5" fill="#94a3b8">guarda o recado</text>
+    <text x="455" y="108" text-anchor="middle" font-size="11" fill="#fbbf24">com o script embutido</text>
+    <!-- vitima pede pagina -->
+    <rect class="pill" x="720" y="40" width="180" height="80" rx="10"/>
+    <text x="810" y="70" text-anchor="middle" font-size="14" font-weight="700">3. Vítima</text>
+    <text x="810" y="92" text-anchor="middle" font-size="11.5" fill="#94a3b8">abre o mural</text>
+    <line x1="810" y1="120" x2="650" y2="210" class="flow"/>
+    <!-- servidor devolve -->
+    <rect class="pill" x="300" y="190" width="350" height="70" rx="10"/>
+    <text x="475" y="218" text-anchor="middle" font-size="13" font-weight="700">4. Servidor devolve a página</text>
+    <text x="475" y="240" text-anchor="middle" font-size="11.5" fill="#f87171">com o &lt;script&gt; SEM escapar</text>
+    <line x1="455" y1="120" x2="455" y2="188" class="attack"/>
+    <!-- execucao -->
+    <rect x="120" y="290" width="680" height="54" rx="10" fill="#1b1113" stroke="#7f1d1d"/>
+    <text x="140" y="314" font-size="13.5" fill="#f87171">5. O navegador da vítima EXECUTA o script do atacante</text>
+    <text x="140" y="333" font-size="12" fill="#94a3b8">roubo de sessão/cookies, redirecionamento, ações em nome da vítima…</text>
+    <line x1="455" y1="260" x2="455" y2="288" class="attack"/>
+  </svg>
+</section>
+
+<!-- 18 ESTRATÉGIA REPO -->
+<section class="slide">
+  <div class="kicker">Exemplo prático</div>
+  <h2>Estratégia do repositório: duas branches</h2>
+  <div class="cols">
+    <div class="box red">
+      <h3 style="color:var(--bad);margin-top:0">branch <code>vulneravel</code></h3>
+      <ul>
+        <li>SQL concatenado no login</li>
+        <li>Recado renderizado com <code>|safe</code></li>
+        <li class="bad">Os dois ataques funcionam</li>
+      </ul>
+    </div>
+    <div class="box green">
+      <h3 style="color:var(--ok);margin-top:0">branch <code>corrigido</code></h3>
+      <ul>
+        <li>Consulta parametrizada (<code>?</code>)</li>
+        <li>Escape automático do Jinja2</li>
+        <li class="ok">Os dois ataques são bloqueados</li>
+      </ul>
+    </div>
+  </div>
+  <div class="box" style="margin-top:16px">
+    A diferença entre as versões é exatamente o <strong>conserto</strong>. Basta trocar de branch
+    para ver a falha aparecer e sumir:
+    <pre style="margin-top:8px">git diff vulneravel corrigido -- app/</pre>
+  </div>
+</section>
+
+<!-- 19 SQLi codigo -->
+<section class="slide">
+  <div class="kicker">Demo 1 · SQL Injection · A03</div>
+  <h2>Código vulnerável e o ataque</h2>
+  <h3>Login (branch <code>vulneravel</code>)</h3>
+  <pre><span class="muted"># a entrada do usuário é concatenada direto na string SQL</span>
+sql = "SELECT * FROM users WHERE username = '%s' AND password = '%s'" % (u, p)
+user = db.execute(sql).fetchone()</pre>
+  <h3>Ataque no formulário de login</h3>
+  <pre>usuário:  <span class="bad">admin' --</span>
+senha:    <span class="muted">(qualquer coisa)</span></pre>
+  <div class="box red">
+    O <code>--</code> transforma o resto da consulta (a checagem de senha) em comentário.
+    Resultado: <strong class="bad">login como admin sem a senha</strong>.
+  </div>
+</section>
+
+<!-- 20 SQLi fix -->
+<section class="slide">
+  <div class="kicker">Demo 1 · SQL Injection · correção</div>
+  <h2>Correção: consulta parametrizada</h2>
+  <h3>Login (branch <code>corrigido</code>)</h3>
+  <pre><span class="muted"># os valores vão como parâmetros — nunca viram comando SQL</span>
+user = db.execute(
+    "SELECT * FROM users WHERE username = ? AND password = ?",
+    (username, password),
+).fetchone()</pre>
+  <ul>
+    <li>O driver trata <code>admin' --</code> como um <strong>texto de login</strong>, que simplesmente não existe.</li>
+    <li>Mesma regra vale para qualquer payload: <code>' OR '1'='1</code>, <code>' UNION SELECT…</code></li>
+  </ul>
+  <div class="box green">O ataque passa a devolver "usuário ou senha inválidos". ✓</div>
+  <p class="muted" style="margin-top:8px">Em produção: somar hash de senha (bcrypt) em vez de comparar texto puro.</p>
+</section>
+
+<!-- 21 XSS codigo -->
+<section class="slide">
+  <div class="kicker">Demo 2 · Stored XSS · A03</div>
+  <h2>Código vulnerável e o ataque</h2>
+  <h3>Template do mural (branch <code>vulneravel</code>)</h3>
+  <pre>&lt;p&gt;{{ c.content <span class="bad">| safe</span> }}&lt;/p&gt;   <span class="muted">&lt;!-- desliga o escape do Jinja2 --&gt;</span></pre>
+  <h3>Ataque: publicar este recado</h3>
+  <pre><span class="bad">&lt;script&gt;alert('XSS de ' + document.domain)&lt;/script&gt;</span></pre>
+  <div class="box red">
+    O recado fica <strong>salvo no banco</strong>. Todo mundo que abrir o mural executa o script
+    do atacante — por isso <em>stored</em> (persistente).
+  </div>
+</section>
+
+<!-- 22 XSS fix -->
+<section class="slide">
+  <div class="kicker">Demo 2 · Stored XSS · correção</div>
+  <h2>Correção: deixar o Jinja2 escapar</h2>
+  <h3>Template do mural (branch <code>corrigido</code>)</h3>
+  <pre>&lt;p&gt;{{ c.content }}&lt;/p&gt;   <span class="muted">&lt;!-- escape automático ligado --&gt;</span></pre>
+  <ul>
+    <li>O Jinja2 converte <code>&lt;</code> <code>&gt;</code> <code>&amp;</code> <code>"</code> em entidades HTML.</li>
+    <li>O <code>&lt;script&gt;</code> aparece como <strong>texto na tela</strong> e não executa.</li>
+    <li>Princípio: <em>output encoding</em> — tratar dado do usuário como dado, nunca como código.</li>
+  </ul>
+  <div class="box green">O recado malicioso vira texto inofensivo. ✓</div>
+  <p class="muted" style="margin-top:8px">Reforços: Content-Security-Policy e sanitização de HTML quando se quer permitir formatação.</p>
+</section>
+
+<!-- 23 ROTEIRO DEMO -->
+<section class="slide">
+  <div class="kicker">Demonstração ao vivo</div>
+  <h2>Roteiro da demonstração</h2>
+  <pre>git checkout vulneravel
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r app/requirements.txt
+python app/app.py                 <span class="muted"># abre http://127.0.0.1:5080</span>
+
+<span class="bad"># 1) login:  admin' --   → entra sem senha</span>
+<span class="bad"># 2) recado: &lt;script&gt;alert(document.domain)&lt;/script&gt; → alerta dispara</span>
+
+git checkout corrigido &amp;&amp; python app/app.py
+<span class="ok"># mesmos dois ataques agora falham</span></pre>
+  <div class="box">
+    Opcional (SAST): <code>pip install bandit &amp;&amp; bandit app/app.py</code> aponta a linha do SQL na
+    branch <code>vulneravel</code> e fica limpo na <code>corrigido</code>.
+  </div>
+  <p class="muted" style="margin-top:6px">Repositório: <em>[URL do repositório Git]</em></p>
+</section>
+
+<!-- 24 CONCLUSÃO -->
+<section class="slide">
+  <div class="kicker">Conclusão</div>
+  <h2>O que levar desta apresentação</h2>
+  <ul class="big">
+    <li>Teste funcional não basta: a versão vulnerável <strong>funcionava</strong>.</li>
+    <li>Security Testing verifica o que o sistema <strong>não deve permitir</strong>, pensando como o atacante.</li>
+    <li>As duas falhas vêm da mesma raiz: <strong>misturar dado com código</strong> (SQL e HTML).</li>
+    <li>A correção é <strong>separar dado de código</strong>: parametrizar consultas e escapar a saída.</li>
+    <li>Nenhuma técnica sozinha resolve — SAST, DAST e testes se complementam.</li>
+    <li>O teste reduz o risco, mas <strong>não prova</strong> que o sistema é seguro.</li>
+  </ul>
+</section>
+
+<!-- 25 REFS livros -->
+<section class="slide">
+  <div class="kicker">Referências</div>
+  <h2>Livros e artigos</h2>
+  <ul style="font-size:.82rem;line-height:1.5">
+    <li>FELDERER, M. et al. Security testing: a survey. <em>Advances in Computers</em>, v. 101, p. 1–51, 2016.</li>
+    <li>HALFOND, W. G. J.; VIEGAS, J.; ORSO, A. A classification of SQL-injection attacks and countermeasures. <em>IEEE Int. Symp. on Secure Software Engineering</em>, 2006.</li>
+    <li>HOWARD, M.; LIPNER, S. <em>The Security Development Lifecycle</em>. Microsoft Press, 2006.</li>
+    <li>McGRAW, G. <em>Software Security: Building Security In</em>. Addison-Wesley, 2006.</li>
+    <li>MILLER, B. P.; FREDRIKSEN, L.; SO, B. An empirical study of the reliability of UNIX utilities. <em>Communications of the ACM</em>, v. 33, n. 12, 1990.</li>
+    <li>MYERS, G. J.; SANDLER, C.; BADGETT, T. <em>The Art of Software Testing</em>. 3. ed. Wiley, 2011.</li>
+    <li>POTTER, B.; McGRAW, G. Software security testing. <em>IEEE Security &amp; Privacy</em>, v. 2, n. 5, p. 81–85, 2004.</li>
+    <li>PRESSMAN, R. S.; MAXIM, B. R. <em>Engenharia de Software</em>. 8. ed. AMGH, 2016.</li>
+    <li>SALTZER, J. H.; SCHROEDER, M. D. The protection of information in computer systems. <em>Proc. of the IEEE</em>, v. 63, n. 9, 1975.</li>
+    <li>SPAFFORD, E. H. The Internet worm program: an analysis. <em>ACM SIGCOMM CCR</em>, v. 19, n. 1, 1989.</li>
+  </ul>
+</section>
+
+<!-- 26 REFS ferramentas -->
+<section class="slide">
+  <div class="kicker">Referências</div>
+  <h2>Ferramentas e frameworks</h2>
+  <ul style="line-height:1.7">
+    <li>OWASP Top 10:2021 — <span class="muted">owasp.org/Top10</span></li>
+    <li>OWASP Web Security Testing Guide — <span class="muted">owasp.org/www-project-web-security-testing-guide</span></li>
+    <li>OWASP ZAP — <span class="muted">zaproxy.org</span></li>
+    <li>Bandit (SAST para Python) — <span class="muted">bandit.readthedocs.io</span></li>
+    <li>sqlmap — <span class="muted">sqlmap.org</span></li>
+    <li>Flask — <span class="muted">flask.palletsprojects.com</span></li>
+    <li>Jinja2 (autoescaping) — <span class="muted">jinja.palletsprojects.com</span></li>
+    <li>pytest — <span class="muted">pytest.org</span></li>
+  </ul>
+  <div class="center" style="height:auto;margin-top:24px">
+    <h1 style="font-size:2rem">Obrigado! Perguntas?</h1>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <span>Security Testing · Mural da Turma</span>
+  <span><span id="cur">1</span> / <span id="tot">26</span></span>
+</footer>
+<div class="hint">← → ou espaço para navegar · F para tela cheia</div>
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  let i = 0;
+  const cur = document.getElementById('cur');
+  const tot = document.getElementById('tot');
+  const prog = document.getElementById('progress');
+  tot.textContent = slides.length;
+  function show(n){
+    i = Math.max(0, Math.min(slides.length-1, n));
+    slides.forEach((s,k)=>s.classList.toggle('active', k===i));
+    cur.textContent = i+1;
+    prog.style.width = ((i+1)/slides.length*100)+'%';
+    location.hash = i+1;
+  }
+  function next(){show(i+1)} function prev(){show(i-1)}
+  document.addEventListener('keydown', e=>{
+    if(['ArrowRight',' ','PageDown'].includes(e.key)){e.preventDefault();next()}
+    else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();prev()}
+    else if(e.key==='Home'){show(0)} else if(e.key==='End'){show(slides.length-1)}
+    else if(e.key.toLowerCase()==='f'){
+      if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  });
+  document.addEventListener('click', e=>{ if(e.target.closest('a')) return;
+    const x=e.clientX/window.innerWidth; x>0.5?next():prev(); });
+  const start = parseInt(location.hash.slice(1)); show(isNaN(start)?0:start-1);
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mural da Turma</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <h1>📌 Mural da Turma</h1>
+    <nav>
+      {% if user %}
+        <span>Logado como <strong>{{ user }}</strong></span>
+        <a href="{{ url_for('logout') }}">sair</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">entrar</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

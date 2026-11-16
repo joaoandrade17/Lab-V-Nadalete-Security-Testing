@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Recados</h2>
+
+  {% if user %}
+    <form method="post" class="card">
+      <label>Novo recado
+        <textarea name="content" rows="3" placeholder="Escreva algo..."></textarea>
+      </label>
+      <button type="submit">Publicar</button>
+    </form>
+  {% else %}
+    <p class="dica"><a href="{{ url_for('login') }}">Entre</a> para publicar um recado.</p>
+  {% endif %}
+
+  <ul class="recados">
+    {% for c in comments %}
+      <li class="card">
+        <span class="autor">{{ c.author }}</span>
+        {# [SEGURANCA] Sem o filtro |safe. O Jinja2 escapa o conteudo
+           automaticamente, entao <script> aparece como texto e NAO executa. #}
+        <p>{{ c.content }}</p>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
