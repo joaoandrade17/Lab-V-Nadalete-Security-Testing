@@ -1,14 +1,14 @@
 """
 Mural Seguro - aplicacao de exemplo para a apresentacao de Security Testing.
 
-Esta e a versao CORRIGIDA. As duas vulnerabilidades demonstradas na
+Esta e a versao VULNERAVEL. As duas vulnerabilidades demonstradas na
 apresentacao (SQL Injection no login e Stored XSS no mural) estao
-tratadas aqui. Compare com a branch `vulneravel` usando:
+PRESENTES e exploraveis aqui. Compare com a branch `corrigido` usando:
 
     git diff vulneravel corrigido -- app/app.py app/templates/mural.html
 
 Os pontos relevantes de seguranca estao marcados com o comentario
-`# [SEGURANCA]` para facilitar a leitura durante a demonstracao.
+`# [VULNERAVEL]` para facilitar a leitura durante a demonstracao.
 """
 
 import os
@@ -96,13 +96,14 @@ def login():
         password = request.form.get("password", "")
         db = get_db()
 
-        # [SEGURANCA] Consulta parametrizada: a entrada do usuario NUNCA e
-        # concatenada na string SQL. O driver trata os valores como dados,
-        # entao ' OR '1'='1 vira apenas um texto de login invalido.
-        user = db.execute(
-            "SELECT * FROM users WHERE username = ? AND password = ?",
-            (username, password),
-        ).fetchone()
+        # [VULNERAVEL] A entrada do usuario e concatenada direto na string SQL.
+        # Com  username = admin' --  o restante da consulta (a checagem de senha)
+        # vira comentario e o login acontece sem a senha correta.
+        sql = (
+            "SELECT * FROM users WHERE username = '%s' AND password = '%s'"
+            % (username, password)
+        )
+        user = db.execute(sql).fetchone()
 
         if user:
             session["user"] = user["username"]

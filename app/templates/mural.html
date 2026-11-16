@@ -17,9 +17,9 @@
     {% for c in comments %}
       <li class="card">
         <span class="autor">{{ c.author }}</span>
-        {# [SEGURANCA] Sem o filtro |safe. O Jinja2 escapa o conteudo
-           automaticamente, entao <script> aparece como texto e NAO executa. #}
-        <p>{{ c.content }}</p>
+        {# [VULNERAVEL] O filtro |safe desliga o escape automatico do Jinja2.
+           Um recado com <script> e renderizado como HTML e EXECUTA no navegador. #}
+        <p>{{ c.content|safe }}</p>
       </li>
     {% endfor %}
   </ul>
