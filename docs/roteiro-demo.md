@@ -84,10 +84,11 @@ grep -n "safe" app/templates/mural.html
 bandit app/app.py
 ```
 
-O Bandit aponta `B608` (hardcoded SQL / string-based query) na linha da
-concatenação — ninguém escreveu um teste, a ferramenta achou lendo o código.
-Comente que ela acha o SQLi, mas **não** acharia o XSS de template nem falhas de
-regra de negócio.
+O Bandit aponta `B608` (SQL por concatenação de string) na linha do login —
+ninguém escreveu um teste, a ferramenta achou lendo o código. Comente que ela
+acha o SQLi, mas **não** acharia o XSS de template nem falhas de regra de
+negócio. (Ele também lista a `secret_key` fixa e o `debug=True`, que são
+esperados neste exemplo didático.)
 
 ---
 
@@ -105,7 +106,7 @@ Repita **os mesmos dois ataques**:
 - Login `admin' --` → agora devolve "usuário ou senha inválidos". ✓
 - Recado `<script>...</script>` → agora aparece como **texto na tela**, não executa. ✓
 
-Se tiver rodado o Bandit, rode de novo: sem achados.
+Se tiver rodado o Bandit, rode de novo: o achado `B608` do SQL some.
 
 ---
 

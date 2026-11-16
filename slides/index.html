@@ -506,8 +506,8 @@ python app/app.py                 <span class="muted"># abre http://127.0.0.1:50
 git checkout corrigido &amp;&amp; python app/app.py
 <span class="ok"># mesmos dois ataques agora falham</span></pre>
   <div class="box">
-    Opcional (SAST): <code>pip install bandit &amp;&amp; bandit app/app.py</code> aponta a linha do SQL na
-    branch <code>vulneravel</code> e fica limpo na <code>corrigido</code>.
+    Opcional (SAST): <code>pip install bandit &amp;&amp; bandit app/app.py</code> aponta
+    <code>B608</code> (SQL concatenado) na branch <code>vulneravel</code>; o achado some na <code>corrigido</code>.
   </div>
   <p class="muted" style="margin-top:6px">Repositório: <em>[URL do repositório Git]</em></p>
 </section>

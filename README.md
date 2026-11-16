@@ -82,8 +82,9 @@ pip install bandit
 bandit app/app.py
 ```
 
-Na `vulneravel` o Bandit aponta a linha da concatenação de SQL; na `corrigido`
-não há achados.
+Na `vulneravel` o Bandit aponta `B608` (SQL por concatenação) na linha do login;
+na `corrigido` esse achado some. Os avisos restantes (`secret_key` fixa e
+`debug=True`) são esperados num app didático de `localhost`.
 
 ## Como a correção funciona
 
