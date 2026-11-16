@@ -53,6 +53,18 @@
   .hint{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);
     color:#475569;font-size:.75rem}
   svg text{fill:var(--text);font-family:system-ui,sans-serif}
+  /* Impressao / exportacao em PDF: mostra todos os slides, um por pagina. */
+  @media print{
+    @page{size:1000px 640px;margin:0}
+    html,body{background:var(--bg2)}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .deck{display:block;height:auto}
+    .slide{display:block!important;width:1000px;height:640px;border-radius:0;
+      border:0;box-shadow:none;margin:0;overflow:hidden;
+      page-break-after:always;break-after:page}
+    .slide:last-child{page-break-after:auto}
+    footer,.hint,.progress{display:none!important}
+  }
   .pill{fill:var(--card);stroke:var(--line)}
   .flow{stroke:var(--accent);stroke-width:2;fill:none;marker-end:url(#arrow)}
   .attack{stroke:var(--bad);stroke-width:2;fill:none;stroke-dasharray:6 5;marker-end:url(#arrowbad)}
