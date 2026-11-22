@@ -64,6 +64,7 @@
       page-break-after:always;break-after:page}
     .slide:last-child{page-break-after:auto}
     footer,.hint,.progress{display:none!important}
+    .slide.active{animation:none}
   }
   .pill{fill:var(--card);stroke:var(--line)}
   .flow{stroke:var(--accent);stroke-width:2;fill:none;marker-end:url(#arrow)}
@@ -76,13 +77,27 @@
 
 <!-- 1 CAPA -->
 <section class="slide active">
-  <div class="center">
-    <div class="kicker">Non-Functional Testing</div>
-    <h1>Security Testing</h1>
+  <div class="center" style="align-items:center;text-align:center">
+    <svg width="64" height="76" viewBox="0 0 24 28" fill="none" aria-hidden="true"
+      style="filter:drop-shadow(0 0 14px rgba(56,189,248,.45));margin-bottom:14px">
+      <defs><linearGradient id="escudo" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>
+      <path d="M12 1.5 22 5.5v8c0 6.2-4.2 10.9-10 12.9C6.2 24.4 2 19.7 2 13.5v-8z" stroke="url(#escudo)" stroke-width="1.4"/>
+      <rect x="8" y="12" width="8" height="7" rx="1.6" stroke="url(#escudo)" stroke-width="1.4"/>
+      <path d="M9.8 12v-1.8a2.2 2.2 0 0 1 4.4 0V12" stroke="url(#escudo)" stroke-width="1.4"/>
+      <circle cx="12" cy="15.5" r=".9" fill="#38bdf8"/>
+    </svg>
+    <div class="kicker">Non-Functional Testing · Seminário</div>
+    <h1 style="font-size:3.6rem;color:var(--accent)">Security Testing</h1>
     <p class="sub">Testando o que o sistema <em>não</em> deve permitir —<br>
     demonstrado em uma aplicação web com duas vulnerabilidades reais.</p>
-    <p class="muted" style="margin-top:30px">Grupo Concord · Fatec São José dos Campos<br>
-    Exemplo prático: <strong>Mural da Turma</strong> (Python + Flask)</p>
+    <div style="width:110px;height:3px;border-radius:3px;margin:14px auto 18px;
+      background:linear-gradient(90deg,var(--accent),var(--accent2))"></div>
+    <p style="margin:0;font-weight:700;font-size:1.15rem">Grupo Concord</p>
+    <p class="muted" style="margin:6px 0 0;font-size:.95rem">Victor Nogueira · Richard Cordeiro · Thiago Abreu ·
+    Joao Baranov · Joao Andrade · Isaac Oliveira · Vinicius Penteado</p>
+    <p class="accent" style="margin-top:14px;font-size:.95rem">Fatec São José dos Campos · 23/11/2026 ·
+    Exemplo: Mural da Turma (Python + Flask)</p>
   </div>
 </section>
 
@@ -218,7 +233,7 @@
   <div class="kicker">Técnicas e riscos</div>
   <h2>Principais técnicas</h2>
   <table>
-    <tr><th>Técnica</th><th>Como funciona</th><th>Executa?</th><th>No exemplo</th></tr>
+    <tr><th>Técnica</th><th>Como funciona</th><th>Executa?</th><th>Ferramenta</th></tr>
     <tr><td>SAST (estática)</td><td>Analisa o código-fonte procurando padrões inseguros</td><td>Não</td><td>Bandit (Python)</td></tr>
     <tr><td>DAST (dinâmica)</td><td>Ataca a aplicação em execução pela interface (caixa-preta)</td><td>Sim</td><td>OWASP ZAP</td></tr>
     <tr><td>Exploração manual</td><td>O testador reproduz o ataque pela própria interface</td><td>Sim</td><td class="accent">navegador + payloads</td></tr>
@@ -521,7 +536,7 @@ git checkout corrigido &amp;&amp; python app/app.py
     Opcional (SAST): <code>pip install bandit &amp;&amp; bandit app/app.py</code> aponta
     <code>B608</code> (SQL concatenado) na branch <code>vulneravel</code>; o achado some na <code>corrigido</code>.
   </div>
-  <p class="muted" style="margin-top:6px">Repositório: <em>[URL do repositório Git]</em></p>
+  <p class="muted" style="margin-top:6px">Repositório: <a class="accent" href="https://github.com/joaoandrade17/Lab-V-Nadalete-Security-Testing">https://github.com/joaoandrade17/Lab-V-Nadalete-Security-Testing</a></p>
 </section>
 
 <!-- 24 CONCLUSÃO -->
